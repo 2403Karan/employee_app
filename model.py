@@ -56,5 +56,3 @@ class Departments(Base):
      
     dept_no= mapped_column(String,primary_key=True)
     dept_name=mapped_column(String)
-
-
