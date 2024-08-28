@@ -35,12 +35,27 @@ def recordInJson(records):
             'firstName':row.first_name,
             'lastName': row.last_name,
             'gender':row.gender,
+            'hireDate':convertDate(row.hire_date)
+        }
+        obj_arr.append(employee)
+    json_data=json.dumps(obj_arr,indent=4)
+    return json_data
+
+def fullRecordInJson(records):
+    obj_arr=[]
+    for row in records:
+        print(row)
+        employee= {
+            'empNo': row.emp_no,
+            'birthDate': convertDate(row.birth_date),
+            'firstName':row.first_name,
+            'lastName': row.last_name,
+            'gender':row.gender,
             'hireDate':convertDate(row.hire_date),
             'salary':row.salary,
             'department':row.dept_no,
             'departmentName':row.dept_name,
-            'title':row.title
-            
+            'title':row.title  
         }
         obj_arr.append(employee)
     json_data=json.dumps(obj_arr,indent=4)
@@ -59,8 +74,6 @@ def salary(records):
     json_data=json.dumps(myObj,indent=4)
     return json_data
         
-    
-
 
 # INSERT EMPLOYEES(POST METHOD)
 def insertEmployee(dataToBeInserted):
@@ -94,10 +107,9 @@ def getEmployeeById(employeeId):
     print(stmt)
     with engine.connect() as conn:
         records=conn.execute(stmt).fetchall()
-        return recordInJson(records)    
+        return fullRecordInJson(records)    
 
 def getSalary(empNo,date):
-    print(date)
     if date is not None:
         stmt=select(Salaries).where(and_((Salaries.emp_no==empNo),between(date,Salaries.from_date,Salaries.to_date)))
     else:
@@ -107,9 +119,6 @@ def getSalary(empNo,date):
         records=conn.execute(stmt).fetchall()
         return salary(records)
     
-
-    
-
 def getEmployee(page,page_size):
     records=session.query(Employees).offset((page - 1) * page_size).limit(page_size).all()
     return recordInJson(records)    
@@ -135,6 +144,7 @@ def getEmployeeByName(page,page_size,name):
 #             print(f"department: {dict(row._mapping[Departments])}")
 #             print(f"dept_manager: {dict(row._mapping[Dept_manager])}")
 
+# put method: to update data in database   
 def updateRecordsOfEmployee(empNo,data):
     try:
         jsonObj={}
@@ -156,11 +166,10 @@ def updateRecordsOfEmployee(empNo,data):
         print("Could not update into Employees table")
         raise
     
-
+# delete method:TO Delete any employee data
 def deleteEmployeeData(empNo):
     try:
         stmt = delete(Employees).where(Employees.emp_no == empNo)
-        print(stmt)
         session.execute(stmt)
         session.commit()
         return {"result":"succesfully deleted"}
