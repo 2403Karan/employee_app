@@ -4,34 +4,35 @@ import json
 app=Flask(__name__)
 
 # post method
-@app.route('/app/employee',methods=["POST"])
+@app.route('/employee',methods=["POST"])
 def insertEmployeeInTable():
     if request.method=="POST":
         data=request.get_json()
-        # print(data)
         results=mysql_client.insertEmployee(data)
     return results 
 
 # get method
-@app.route('/employee/<int:empNo>')
+@app.route('/employee/<int:empNo>')      # getting records of employee
 def getEmployeeById(empNo):
-    employes=mysql_client.getEmployeeById(empNo)
+    date=request.args.get('date')
+    employes=mysql_client.getEmployeeById(empNo,date)
     return employes
 
-@app.route('/app/employee')
+@app.route('/pagination/employee')       # getting records in paging form
 def getEmployeeWithPaging():
     page=int(request.args.get('page'))
     pageSize=int(request.args.get('pageSize'))
     name=str(request.args.get('name'))
-    if name:
-        employes=mysql_client.getEmployeeByName(page,pageSize,name)
-        print(employes)
-    else:
+    employes=[]
+    if name=="None":
         employes=mysql_client.getEmployee(page,pageSize)
         print(employes)
-    return employes   #error occcured
+    else:
+        employes=mysql_client.getEmployeeByName(page,pageSize,name)
+        print(employes)    
+    return employes   
 
-@app.route('/employee/<int:empNo>/salary')
+@app.route('/employee/<int:empNo>/salary')   # getting salary record of employee
 def getSalaryOfEmployee(empNo):
     date=request.args.get('date')
     salary=mysql_client.getSalary(empNo,date)

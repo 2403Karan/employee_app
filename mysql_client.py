@@ -79,11 +79,8 @@ def salary(records):
 def insertEmployee(dataToBeInserted):
     try:
         results=session.execute(Employees.__table__.insert(),dataToBeInserted)
-        print(dataToBeInserted)
-        print(results.inserted_primary_key)
         session.commit()
         inserted_id=results.inserted_primary_key[0] if results.inserted_primary_key else None
-        print(inserted_id)
         # if QUERY_LOGGING:
         #     print('Inserted entry: %s' % str(dataToBeInserted))
         return  { "emp_no": inserted_id}
@@ -92,29 +89,28 @@ def insertEmployee(dataToBeInserted):
             str(dataToBeInserted), str(e)))
         raise
     
-
-# GET INFORMATION OF EMPLOYEES(GET METHOD)
-def getEmployeeById(employeeId):
-    # query=session.query(Employees).filter(Employees.emp_no == employeeId).all()
-    # recordInJson(query)
     
-    join_stmt=join(Employees,Salaries,Employees.emp_no==Salaries.emp_no )\
+# GET INFORMATION OF EMPLOYEES(GET METHOD)
+def getEmployeeById(empNo,date):
+    if date is None:
+        query=session.query(Employees).filter(Employees.emp_no == empNo).all()
+        return recordInJson(query)
+    else:    
+        join_stmt=join(Employees,Salaries,Employees.emp_no==Salaries.emp_no )\
             .join(Dept_emp,Employees.emp_no==Dept_emp.emp_no)\
             .join(Titles,Employees.emp_no==Titles.emp_no)\
             .join(Departments,Dept_emp.dept_no==Departments.dept_no)
-    stmt=select(Employees,Salaries,Dept_emp,Titles,Departments).select_from(join_stmt)\
-        .where(Employees.emp_no == employeeId)
-    print(stmt)
-    with engine.connect() as conn:
-        records=conn.execute(stmt).fetchall()
-        return fullRecordInJson(records)    
+        stmt=select(Employees,Salaries,Dept_emp,Titles,Departments).select_from(join_stmt)\
+        .where(and_((Salaries.emp_no==empNo),between(date,Salaries.from_date,Salaries.to_date)))
+        with engine.connect() as conn:
+            records=conn.execute(stmt).fetchall()
+            return fullRecordInJson(records)    
 
 def getSalary(empNo,date):
     if date is not None:
         stmt=select(Salaries).where(and_((Salaries.emp_no==empNo),between(date,Salaries.from_date,Salaries.to_date)))
     else:
         stmt=select(Salaries).where(Salaries.emp_no==empNo).order_by(desc(Salaries.from_date))
-    print(stmt)
     with engine.connect() as conn:
         records=conn.execute(stmt).fetchall()
         return salary(records)
@@ -129,20 +125,6 @@ def getEmployeeByName(page,page_size,name):
         records=con.execute(stmt1).all()
     return recordInJson(records)
 
-# def getEmployeeFullInformation():
-#     join_stmt=Employees.join(Titles,Employees.emp_no==Titles.emp_no)\
-#                        .join(Salaries,Employees.emp_no==Salaries.emp_no)\
-#                        .join(Dept_manager,Employees.emp_no==Dept_manager.emp_no)\
-#                        .join(Departments,Dept_manager.dept_no==Departments.dept_no)
-#     stmt=select(Employees,Salaries,Titles,Departments,Dept_manager).select_from(join_stmt)
-#     with engine.connect() as con:
-#         results=con.execute(stmt)
-#         for row in results:
-#             print(f"employees: {dict(row._mapping[Employees])}")
-#             print(f"salaries: {dict(row._mapping[Salaries])}")
-#             print(f"title: {dict(row._mapping[Titles])}")
-#             print(f"department: {dict(row._mapping[Departments])}")
-#             print(f"dept_manager: {dict(row._mapping[Dept_manager])}")
 
 # put method: to update data in database   
 def updateRecordsOfEmployee(empNo,data):
