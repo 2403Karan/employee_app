@@ -22,9 +22,9 @@ def getEmployeeById(empNo):
 def getEmployeeWithPaging():
     page=int(request.args.get('page'))
     pageSize=int(request.args.get('pageSize'))
-    name=str(request.args.get('name'))
+    name=request.args.get('name')
     employes=[]
-    if name=="None":
+    if name is None:
         employes=mysql_client.getEmployee(page,pageSize)
         print(employes)
     else:
