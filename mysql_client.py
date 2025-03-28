@@ -28,7 +28,6 @@ def convertDate(dt):
 def recordInJson(records):
     obj_arr=[]
     for row in records:
-        print(row)
         employee= {
             'empNo': row.emp_no,
             'birthDate': convertDate(row.birth_date),
@@ -120,9 +119,9 @@ def getEmployee(page,page_size):
     return recordInJson(records)    
 
 def getEmployeeByName(page,page_size,name):
-    stmt1=select(Employees).where(func.concat(Employees.first_name, Employees.last_name).like(f'%{name}%')).offset((page - 1) * page_size).limit(page_size)
+    stmt1=select(Employees).where(func.concat(Employees.first_name, Employees.last_name).like(f'{name}%')).offset((page - 1) * page_size).limit(page_size)
     with engine.connect() as con:
-        records=con.execute(stmt1).all()
+        records=con.execute(stmt1).fetchall()
     return recordInJson(records)
 
 

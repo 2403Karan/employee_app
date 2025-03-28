@@ -18,18 +18,16 @@ def getEmployeeById(empNo):
     employes=mysql_client.getEmployeeById(empNo,date)
     return employes
 
-@app.route('/pagination/employee')       # getting records in paging form
-def getEmployeeWithPaging():
+@app.route('/employee')       # getting records in paging form
+def getEmployeeDetials():
     page=int(request.args.get('page'))
     pageSize=int(request.args.get('pageSize'))
     name=request.args.get('name')
     employes=[]
     if name is None:
         employes=mysql_client.getEmployee(page,pageSize)
-        print(employes)
     else:
-        employes=mysql_client.getEmployeeByName(page,pageSize,name)
-        print(employes)    
+        employes=mysql_client.getEmployeeByName(page,pageSize,name) 
     return employes   
 
 @app.route('/employee/<int:empNo>/salary')   # getting salary record of employee
